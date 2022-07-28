@@ -7,6 +7,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"shantae/methods"
 )
 
 func main() {
@@ -17,8 +19,18 @@ func main() {
 	fmt.Println("Version 1.0")
 
 	if len(args) > 1 {
-		for i := 1; i < len(args); i++ {
-			fmt.Printf("%s\n", args[i])
+		if len(args) == 3 && args[1] == "-l" {
+			if _, err := os.Stat(args[2]); err == nil {
+				list, err := methods.ReadArcHeader(args[2])
+
+				if err != nil {
+					panic(err)
+				}
+
+				for i := 0; i < len(list); i++ {
+					fmt.Printf("%d. %016x\t%d     %s\n", (i + 1), list[i].FileOffset, list[i].UncompressedSize, list[i].FileName)
+				}
+			}
 		}
 	} else {
 		fmt.Println("How to use my tool.")
