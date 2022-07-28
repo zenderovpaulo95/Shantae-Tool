@@ -7,6 +7,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"shantae/methods"
 )
@@ -31,6 +32,30 @@ func main() {
 					fmt.Printf("%d. %016x\t%d     %s\n", (i + 1), list[i].FileOffset, list[i].UncompressedSize, list[i].FileName)
 				}
 			}
+		}
+		if ((len(args) == 3) || (len(args) == 4)) && args[1] == "-ea" {
+			if _, err := os.Stat(args[2]); err == nil {
+				list, err := methods.ReadArcHeader(args[2])
+
+				if err != nil {
+					panic(err)
+				}
+			outputFilePath := filepath.Dir(args[0])
+
+			if len(args == 4) {
+				_, err := os.Stat(args[3])
+
+				if os.IsNotExists(err) {
+					panic(err)
+				}
+
+				outputFilePath = args[3]
+			}
+		}
+			
+		}
+		if ((len(args) == 3) || (len(args) == 4)) && args[1] == "-ra" {
+			//Do something later...
 		}
 	} else {
 		fmt.Println("How to use my tool.")
