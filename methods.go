@@ -153,11 +153,40 @@ func readArcHeader(fileName string) (arcHead []ListFiles, err error) {
 	}
 
 	//Считываю смещения к файлам
-	_, err = file.Seek(int64(head.compressLogicOffset), 0)
+	_, err = file.Seek(int64(head.fileOffset), 0)
 
 	for i := 0; i < head.filesCount; i++ {
-		arcHead[i].isCompressed, err = buf.ReadByte()
+		tmpByte = make([]byte, 8)
+		_, err = buf.Read(tmpByte)
+		arcHead[i].fileOffset = binary.LittleEndian.Uint64(tmpByte)
 	}
+
+	//Считываю размеры сжатых файлов
+	_, err = file.Seek(int64(head.cSizeOffset), 0)
+
+	for i := 0; i < head.filesCount; i++ {
+		tmpByte = make([]byte, 8)
+		_, err = buf.Read(tmpByte)
+		arcHead[i].compressedSize = binary.LittleEndian.Uint64(tmpByte)
+	}
+
+	//Считываю размеры файлов
+	_, err = file.Seek(int64(head.sizeOffset), 0)
+
+	for i := 0; i < head.filesCount; i++ {
+		tmpByte = make([]byte, 8)
+		_, err = buf.Read(tmpByte)
+		arcHead[i].uncompressedSize = binary.LittleEndian.Uint64(tmpByte)
+	}
+
+	//Считываю названия файлов
+	/*_, err = file.Seek(int64(head.sizeOffset), 0)
+
+	for i := 0; i < head.filesCount; i++ {
+		tmpByte = make([]byte, 8)
+		_, err = buf.Read(tmpByte)
+		arcHead[i].uncompressedSize = binary.LittleEndian.Uint64(tmpByte)
+	}*/
 
 	return
 }
