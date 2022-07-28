@@ -26,6 +26,7 @@ func main() {
 		fmt.Printf("%s -ea arc.file \"path/to/extracted/files\" - extract files from archive into extracted folder\n", args[0])
 		fmt.Printf("%s -ra arc.file - repack files into archive. Default resource folder is a tool's path.\n", args[0])
 		fmt.Printf("%s -ra arc.file \"path/to/extracted/files\" - repack files from resource folder into archive\n", args[0])
+		fmt.Printf("%s -l arc.file - get list of files in archive\n", args[0])
 	}
 
 }
