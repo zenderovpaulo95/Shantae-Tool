@@ -8,7 +8,7 @@ import (
 
 type ListFiles struct {
 	FileName         string
-	IsCompressed     byte
+	IsCompressed     bool
 	FileNameOffset   uint32
 	FileOffset       uint64
 	CompressedSize   uint64
@@ -151,7 +151,10 @@ func ReadArcHeader(fileName string) (arcHead []ListFiles, err error) {
 		tmpByte = make([]byte, 1)
 		_, bufErr = file.Read(tmpByte)
 
-		arcHead[i].IsCompressed = tmpByte[0]
+		arcHead[i].IsCompressed = true
+		if int(tmpByte[0]) != 1 {
+			arcHead[i].IsCompressed = false
+		}
 	}
 
 	//Считываю смещения к файлам
@@ -189,7 +192,7 @@ func ReadArcHeader(fileName string) (arcHead []ListFiles, err error) {
 		arcHead[i].FileNameOffset = binary.LittleEndian.Uint32(tmpByte)
 	}
 
-	len := 0	
+	len := 0
 
 	for i := 0; i < head.FilesCount; i++ {
 		_, err = file.Seek(int64(arcHead[i].FileNameOffset), 0)
@@ -206,7 +209,7 @@ func ReadArcHeader(fileName string) (arcHead []ListFiles, err error) {
 
 		_, err = file.Seek(int64(arcHead[i].FileNameOffset), 0)
 
-		tmpByte = make([]byte, len - 1)
+		tmpByte = make([]byte, len-1)
 		_, err = file.Read(tmpByte)
 		arcHead[i].FileName = string(tmpByte)
 	}
