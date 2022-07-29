@@ -8,7 +8,46 @@ import (
 	"os"
 )
 
-func Unpack(listFiles []ListFiles, fileName string, outputDir string) (err error) {
+func UnpackVol(listFiles []ListVolFiles, fileName string, outputDir string) (err error) {
+	file, err := os.Open(fileName)
+
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	for i := 0; i < len(listFiles); i++ {
+		_, err = file.Seek(int64(listFiles[i].Offset), 0)
+
+		if err != nil {
+			return err
+		}
+
+		tmpByte := make([]byte, listFiles[i].Size)
+		_, err = file.Read(tmpByte)
+
+		/*_, err = os.Stat(outputDir + "/" + listFiles[i].FileName)
+
+		if !os.IsNotExist(err) {
+			os.Remove(outputDir + "/" + listFiles[i].FileName)
+		}*/
+
+		outFile, err := os.Create(outputDir + "/" + listFiles[i].FileName)
+
+		if err != nil {
+			return err
+		}
+		defer outFile.Close()
+
+		outFile.Write(tmpByte)
+
+		fmt.Printf("%d. %08x\t%d     %s\n", (i + 1), listFiles[i].Offset, listFiles[i].Size, listFiles[i].FileName)
+	}
+
+	return
+}
+
+func UnpackArchive(listFiles []ListFiles, fileName string, outputDir string) (err error) {
 	file, err := os.Open(fileName)
 
 	if err != nil {
@@ -20,7 +59,7 @@ func Unpack(listFiles []ListFiles, fileName string, outputDir string) (err error
 		_, err = file.Seek(int64(listFiles[i].FileOffset), 0)
 
 		if err != nil {
-			return nil
+			return err
 		}
 
 		fileSize := listFiles[i].UncompressedSize

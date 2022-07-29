@@ -20,8 +20,9 @@ func main() {
 	fmt.Println("Version 1.0")
 
 	if len(args) > 1 {
-		if len(args) == 3 && args[1] == "-l" {
+		if len(args) == 3 && ((args[1] == "-la") || (args[1] == "-lv")) {
 			if _, err := os.Stat(args[2]); err == nil {
+				if args[1] == "-la" {
 				list, err := methods.ReadArcHeader(args[2])
 
 				if err != nil {
@@ -31,16 +32,23 @@ func main() {
 				for i := 0; i < len(list); i++ {
 					fmt.Printf("%d. %016x\t%d     %s\n", (i + 1), list[i].FileOffset, list[i].UncompressedSize, list[i].FileName)
 				}
-			}
-		}
-		if ((len(args) == 3) || (len(args) == 4)) && args[1] == "-ea" {
-			if _, err := os.Stat(args[2]); err == nil {
-				list, err := methods.ReadArcHeader(args[2])
+			} else {
+				list, err := methods.ReadVolHeader(args[2])
 
 				if err != nil {
 					panic(err)
 				}
-				outputFilePath := filepath.Dir(args[0]) + "Unpacked"
+
+				for i := 0; i < len(list); i++ {
+					fmt.Printf("%d. %08x\t%d     %s\n", (i + 1), list[i].Offset, list[i].Size, list[i].FileName)
+				}
+				}
+			}
+		}
+
+		if ((len(args) == 3) || (len(args) == 4)) && ((args[1] == "-ea") || (args[1] == "-ev")) {
+			if _, err := os.Stat(args[2]); err == nil {
+				outputFilePath := filepath.Dir(args[0]) + "/Unpacked"
 
 				if len(args) == 4 {
 					_, err = os.Stat(args[3])
@@ -60,11 +68,20 @@ func main() {
 
 				fmt.Println("Unpacking...")
 
-				err = methods.Unpack(list, args[2], outputFilePath)
+				if args[1] == "-ea" {
+				list, err := methods.ReadArcHeader(args[2])
+				err = methods.UnpackArchive(list, args[2], outputFilePath)
 
 				if err != nil {
 					panic(err)
 				}
+			} else {
+				list, err := methods.ReadVolHeader(args[2])
+				err = methods.UnpackVol(list, args[2], outputFilePath)
+				if err != nil {
+					panic(err)
+				}
+			}
 			}
 		}
 		if ((len(args) == 3) || (len(args) == 4)) && args[1] == "-ra" {
@@ -76,7 +93,8 @@ func main() {
 		fmt.Printf("%s -ea arc.data \"path/to/extracted/files\" - extract files from archive into extracted folder\n", args[0])
 		fmt.Printf("%s -ra arc.data - repack files into archive. Default resource folder is a tool's path.\n", args[0])
 		fmt.Printf("%s -ra arc.data \"path/to/extracted/files\" - repack files from resource folder into archive\n", args[0])
-		fmt.Printf("%s -l arc.data - get list of files in archive\n", args[0])
+		fmt.Printf("%s -la arc.data - get list of files in archive\n", args[0])
+		fmt.Printf("%s -lv arc.vol - get list of files in archive\n", args[0])
 	}
 
 }
