@@ -3,7 +3,6 @@ package methods
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"os"
 )
 
@@ -17,11 +16,11 @@ type UnknownStruct struct {
 
 type Coordinates struct {
 	Char     uint
-	Unknown1 uint16
-	Unknown2 uint16
-	Unknown3 uint16
-	Unknown4 uint16
-	Unknown5 uint16
+	X        uint16
+	Y        uint16
+	Unknown3 int16
+	Unknown4 int16
+	Unknown5 int16
 	Unknown6 uint16
 	Unknown7 uint
 }
@@ -45,6 +44,10 @@ type FontHeader struct {
 	KernPairsOffset uint
 	Unknown4        uint16
 	Unknown5        int16
+	Unknown6        uint16
+	Unknown7        uint16
+	UnknownOffset1  uint
+	UnknownOffset2  uint
 
 	KernPairs   []KernPair
 	Chars       []Coordinates
@@ -112,11 +115,25 @@ func ReadHeader(fileName string) (Font FontHeader, err error) {
 	_, err = file.Read(tmpByte)
 	Font.Unknown5 = int16(binary.LittleEndian.Uint16(tmpByte))
 
+	tmpByte = make([]byte, 2)
+	_, err = file.Read(tmpByte)
+	Font.Unknown6 = binary.LittleEndian.Uint16(tmpByte)
+
+	tmpByte = make([]byte, 2)
+	_, err = file.Read(tmpByte)
+	Font.Unknown7 = binary.LittleEndian.Uint16(tmpByte)
+
+	tmpByte = make([]byte, 4)
+	_, err = file.Read(tmpByte)
+	Font.UnknownOffset1 = uint(binary.LittleEndian.Uint32(tmpByte))
+
+	tmpByte = make([]byte, 4)
+	_, err = file.Read(tmpByte)
+	Font.UnknownOffset2 = uint(binary.LittleEndian.Uint32(tmpByte))
+
 	Font.KernPairs = make([]KernPair, Font.KernPairsCount)
 	Font.Chars = make([]Coordinates, Font.CharsCount)
 	Font.UnknownData = make([]UnknownStruct, Font.CharsCount)
-
-	fmt.Printf("%d\t%d\t%d\t%d\n", Font.KernPairsCount, Font.KernPairsOffset, Font.CharsCount, Font.CharsOffset)
 
 	_, err = file.Seek(int64(Font.KernPairsOffset), 0)
 
@@ -176,7 +193,7 @@ func ReadHeader(fileName string) (Font FontHeader, err error) {
 			return
 		}
 
-		Font.Chars[i].Unknown1 = binary.LittleEndian.Uint16(tmpByte)
+		Font.Chars[i].X = binary.LittleEndian.Uint16(tmpByte)
 
 		tmpByte = make([]byte, 2)
 		_, err = file.Read(tmpByte)
@@ -185,7 +202,7 @@ func ReadHeader(fileName string) (Font FontHeader, err error) {
 			return
 		}
 
-		Font.Chars[i].Unknown2 = binary.LittleEndian.Uint16(tmpByte)
+		Font.Chars[i].Y = binary.LittleEndian.Uint16(tmpByte)
 
 		tmpByte = make([]byte, 2)
 		_, err = file.Read(tmpByte)
@@ -194,7 +211,7 @@ func ReadHeader(fileName string) (Font FontHeader, err error) {
 			return
 		}
 
-		Font.Chars[i].Unknown3 = binary.LittleEndian.Uint16(tmpByte)
+		Font.Chars[i].Unknown3 = int16(binary.LittleEndian.Uint16(tmpByte))
 
 		tmpByte = make([]byte, 2)
 		_, err = file.Read(tmpByte)
@@ -203,7 +220,7 @@ func ReadHeader(fileName string) (Font FontHeader, err error) {
 			return
 		}
 
-		Font.Chars[i].Unknown4 = binary.LittleEndian.Uint16(tmpByte)
+		Font.Chars[i].Unknown4 = int16(binary.LittleEndian.Uint16(tmpByte))
 
 		tmpByte = make([]byte, 2)
 		_, err = file.Read(tmpByte)
@@ -212,7 +229,7 @@ func ReadHeader(fileName string) (Font FontHeader, err error) {
 			return
 		}
 
-		Font.Chars[i].Unknown5 = binary.LittleEndian.Uint16(tmpByte)
+		Font.Chars[i].Unknown5 = int16(binary.LittleEndian.Uint16(tmpByte))
 
 		tmpByte = make([]byte, 2)
 		_, err = file.Read(tmpByte)
@@ -223,7 +240,7 @@ func ReadHeader(fileName string) (Font FontHeader, err error) {
 
 		Font.Chars[i].Unknown6 = binary.LittleEndian.Uint16(tmpByte)
 
-		tmpByte = make([]byte, 2)
+		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
 
 		if err != nil {
@@ -231,6 +248,55 @@ func ReadHeader(fileName string) (Font FontHeader, err error) {
 		}
 
 		Font.Chars[i].Unknown7 = uint(binary.LittleEndian.Uint32(tmpByte))
+	}
+
+	_, err = file.Seek(int64(Font.UnknownOffset2), 0)
+
+	for i := 0; i < int(Font.CharsCount); i++ {
+		tmpByte = make([]byte, 2)
+		_, err = file.Read(tmpByte)
+
+		if err != nil {
+			return
+		}
+
+		Font.UnknownData[i].Unknown1 = binary.LittleEndian.Uint16(tmpByte)
+
+		tmpByte = make([]byte, 2)
+		_, err = file.Read(tmpByte)
+
+		if err != nil {
+			return
+		}
+
+		Font.UnknownData[i].Unknown2 = binary.LittleEndian.Uint16(tmpByte)
+
+		tmpByte = make([]byte, 2)
+		_, err = file.Read(tmpByte)
+
+		if err != nil {
+			return
+		}
+
+		Font.UnknownData[i].Unknown3 = int16(binary.LittleEndian.Uint16(tmpByte))
+
+		tmpByte = make([]byte, 2)
+		_, err = file.Read(tmpByte)
+
+		if err != nil {
+			return
+		}
+
+		Font.UnknownData[i].Unknown4 = int16(binary.LittleEndian.Uint16(tmpByte))
+
+		tmpByte = make([]byte, 4)
+		_, err = file.Read(tmpByte)
+
+		if err != nil {
+			return
+		}
+
+		Font.UnknownData[i].Unknown5 = uint(binary.LittleEndian.Uint32(tmpByte))
 	}
 
 	return

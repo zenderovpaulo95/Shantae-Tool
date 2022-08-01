@@ -68,6 +68,20 @@ func SortListFiles(arcHead []ListFiles) []ListFiles {
 	return arcHead
 }
 
+func SortFonts(chars []Coordinates) []Coordinates {
+	for i := 1; i < len(chars); i++ {
+		for j := i; j > 0; j-- {
+			if chars[j-1].Char > chars[j].Char {
+				tmpChar := chars[j-1]
+				chars[j-1] = chars[j]
+				chars[j] = tmpChar
+			}
+		}
+	}
+
+	return chars
+}
+
 func ReadVolHeader(fileName string) (volHead []ListVolFiles, err error) {
 	file, err := os.Open(fileName)
 
@@ -158,7 +172,7 @@ func ReadVolHeader(fileName string) (volHead []ListVolFiles, err error) {
 		volHead[i].Index = (i + 1)
 	}
 
-	off := head.FileOffset + uint(24 * head.FileCount)
+	off := head.FileOffset + uint(24*head.FileCount)
 	//А потом таблицу с названием файлов
 	for i := 0; i < head.FileCount; i++ {
 		_, err = file.Seek(int64(off), 0)
