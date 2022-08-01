@@ -23,25 +23,25 @@ func main() {
 		if len(args) == 3 && ((args[1] == "-la") || (args[1] == "-lv")) {
 			if _, err := os.Stat(args[2]); err == nil {
 				if args[1] == "-la" {
-				list, err := methods.ReadArcHeader(args[2])
+					list, err := methods.ReadArcHeader(args[2])
 
-				if err != nil {
-					panic(err)
-				}
+					if err != nil {
+						panic(err)
+					}
 
-				for i := 0; i < len(list); i++ {
-					fmt.Printf("%d. %016x\t%d     %s\n", (i + 1), list[i].FileOffset, list[i].UncompressedSize, list[i].FileName)
-				}
-			} else {
-				list, err := methods.ReadVolHeader(args[2])
+					for i := 0; i < len(list); i++ {
+						fmt.Printf("%d. %016x\t%d     %s\n", (i + 1), list[i].FileOffset, list[i].UncompressedSize, list[i].FileName)
+					}
+				} else {
+					list, err := methods.ReadVolHeader(args[2])
 
-				if err != nil {
-					panic(err)
-				}
+					if err != nil {
+						panic(err)
+					}
 
-				for i := 0; i < len(list); i++ {
-					fmt.Printf("%d. %08x\t%d     %s\n", (i + 1), list[i].Offset, list[i].Size, list[i].FileName)
-				}
+					for i := 0; i < len(list); i++ {
+						fmt.Printf("%d. %08x\t%d     %s\n", (i + 1), list[i].Offset, list[i].Size, list[i].FileName)
+					}
 				}
 			}
 		}
@@ -69,19 +69,34 @@ func main() {
 				fmt.Println("Unpacking...")
 
 				if args[1] == "-ea" {
-				list, err := methods.ReadArcHeader(args[2])
-				err = methods.UnpackArchive(list, args[2], outputFilePath)
+					list, err := methods.ReadArcHeader(args[2])
+					err = methods.UnpackArchive(list, args[2], outputFilePath)
 
-				if err != nil {
-					panic(err)
-				}
-			} else {
-				list, err := methods.ReadVolHeader(args[2])
-				err = methods.UnpackVol(list, args[2], outputFilePath)
-				if err != nil {
-					panic(err)
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					list, err := methods.ReadVolHeader(args[2])
+					err = methods.UnpackVol(list, args[2], outputFilePath)
+					if err != nil {
+						panic(err)
+					}
 				}
 			}
+		}
+		if (len(args) == 3) && (args[1] == "-lf") {
+			font, err := methods.ReadHeader(args[2])
+
+			if err != nil {
+				panic(err)
+			}
+
+			for i := 0; i < int(font.KernPairsCount); i++ {
+				fmt.Printf("%d\t%d\t%d\n", font.KernPairs[i].FirstChar, font.KernPairs[i].SecondChar, font.KernPairs[i].Amount)
+			}
+
+			for i := 0; i < int(font.CharsCount); i++ {
+				fmt.Printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", font.Chars[i].Char, font.Chars[i].Unknown1, font.Chars[i].Unknown2, font.Chars[i].Unknown3, font.Chars[i].Unknown4, font.Chars[i].Unknown5, font.Chars[i].Unknown6, font.Chars[i].Unknown7)
 			}
 		}
 		if ((len(args) == 3) || (len(args) == 4)) && args[1] == "-ra" {
