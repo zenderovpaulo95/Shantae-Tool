@@ -98,7 +98,7 @@ func main() {
 			font.Chars = methods.SortFonts(font.Chars)
 
 			for i := 0; i < int(font.CharsCount); i++ {
-				fmt.Printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%x\n", font.Chars[i].Char, font.Chars[i].X, font.Chars[i].Y, font.Chars[i].Unknown3, font.Chars[i].Unknown4, font.Chars[i].Unknown5, font.Chars[i].Unknown6, font.Chars[i].Unknown7)
+				fmt.Printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", font.Chars[i].Char, font.Chars[i].X, font.Chars[i].Y, font.Chars[i].Unknown3, font.Chars[i].Unknown4, font.Chars[i].Unknown5, font.Chars[i].Unknown6, font.Chars[i].Unknown7, font.Chars[i].Unknown8)
 			}
 
 			fmt.Println()

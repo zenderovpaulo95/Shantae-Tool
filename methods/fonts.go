@@ -22,7 +22,9 @@ type Coordinates struct {
 	Unknown4 int16
 	Unknown5 int16
 	Unknown6 uint16
-	Unknown7 uint
+	Unknown7 byte
+	Unknown8 byte
+	Unknown9 uint16
 }
 
 type KernPair struct {
@@ -240,14 +242,32 @@ func ReadHeader(fileName string) (Font FontHeader, err error) {
 
 		Font.Chars[i].Unknown6 = binary.LittleEndian.Uint16(tmpByte)
 
-		tmpByte = make([]byte, 4)
+		tmpByte = make([]byte, 1)
 		_, err = file.Read(tmpByte)
 
 		if err != nil {
 			return
 		}
 
-		Font.Chars[i].Unknown7 = uint(binary.LittleEndian.Uint32(tmpByte))
+		Font.Chars[i].Unknown7 = tmpByte[0]
+
+		tmpByte = make([]byte, 1)
+		_, err = file.Read(tmpByte)
+
+		if err != nil {
+			return
+		}
+
+		Font.Chars[i].Unknown8 = tmpByte[0]
+
+		tmpByte = make([]byte, 2)
+		_, err = file.Read(tmpByte)
+
+		if err != nil {
+			return
+		}
+
+		Font.Chars[i].Unknown9 = binary.LittleEndian.Uint16(tmpByte)
 	}
 
 	_, err = file.Seek(int64(Font.UnknownOffset2), 0)
