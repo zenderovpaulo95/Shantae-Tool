@@ -71,7 +71,8 @@ func SortListFiles(arcHead []ListFiles) []ListFiles {
 func SortFonts(chars []Coordinates) []Coordinates {
 	for i := 1; i < len(chars); i++ {
 		for j := i; j > 0; j-- {
-			if chars[j-1].Char > chars[j].Char {
+			//if chars[j-1].Char > chars[j].Char {
+			if chars[j-1].Unknown7 > chars[j].Unknown7 {
 				tmpChar := chars[j-1]
 				chars[j-1] = chars[j]
 				chars[j] = tmpChar
@@ -80,6 +81,20 @@ func SortFonts(chars []Coordinates) []Coordinates {
 	}
 
 	return chars
+}
+
+func SortUD(data []UnknownStruct) []UnknownStruct {
+	for i := 1; i < len(data); i++ {
+		for j := i; j > 0; j-- {
+			if data[j-1].Unknown5 > data[j].Unknown5 {
+				tmpData := data[j-1]
+				data[j-1] = data[j]
+				data[j] = tmpData
+			}
+		}
+	}
+
+	return data
 }
 
 func ReadVolHeader(fileName string) (volHead []ListVolFiles, err error) {

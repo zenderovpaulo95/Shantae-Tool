@@ -15,9 +15,16 @@ import (
 func main() {
 	args := os.Args
 
-	fmt.Println("Shantae tool made by Sudakov Pavel")
+	fmt.Println("Инструментарий для игры Shantae and Pirate's curse. Автор программы: Судаков Павел")
+	fmt.Println("Особая благодарность aluigi за скрипт для разбора ресурсов")
+	fmt.Println("Версия 1.0")
+
+	fmt.Println("Shantae and Pirate's curse tool made by Sudakov Pavel")
 	fmt.Println("Thanks to aluigi for script")
 	fmt.Println("Version 1.0")
+
+	fmt.Println("Исходный код на GitFlic: https://gitflic.ru/project/pashok6798/shantae-tool")
+	fmt.Println("Source code on GitHub: maybe later")
 
 	if len(args) > 1 {
 		if len(args) == 3 && ((args[1] == "-la") || (args[1] == "-lv")) {
@@ -98,10 +105,12 @@ func main() {
 			font.Chars = methods.SortFonts(font.Chars)
 
 			for i := 0; i < int(font.CharsCount); i++ {
-				fmt.Printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", font.Chars[i].Char, font.Chars[i].X, font.Chars[i].Y, font.Chars[i].Unknown3, font.Chars[i].Unknown4, font.Chars[i].Unknown5, font.Chars[i].Unknown6, font.Chars[i].Unknown7, font.Chars[i].Unknown8)
+				fmt.Printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%x\n", font.Chars[i].Char, font.Chars[i].X, font.Chars[i].Y, font.Chars[i].Unknown3, font.Chars[i].Unknown4, font.Chars[i].Unknown5, font.Chars[i].Unknown6, font.Chars[i].Unknown7)
 			}
 
 			fmt.Println()
+
+			font.UnknownData = methods.SortUD(font.UnknownData)
 
 			for i := 0; i < int(font.CharsCount); i++ {
 				fmt.Printf("%d\t%d\t%d\t%d\t%x\n", font.UnknownData[i].Unknown1, font.UnknownData[i].Unknown2, font.UnknownData[i].Unknown3, font.UnknownData[i].Unknown4, font.UnknownData[i].Unknown5)
@@ -111,13 +120,21 @@ func main() {
 			//Do something later...
 		}
 	} else {
+		fmt.Println("Как пользоваться программой.")
+		fmt.Printf("%s -ea arc.data - извлечь vol файлы из архива. По умолчанию файлы извлекутся рядом с программой в папку Unpacked.\n", args[0])
+		fmt.Printf("%s -ea arc.data \"путь/к/папке/с извлечёнными ресурсами\" - извлечь vol файлы из архива в указанную папку.\n", args[0])
+		fmt.Printf("%s -ra arc.data - перепаковать vol файлы в архив. По умолчанию папка Unpacked, находящаяся рядом с программой.\n", args[0])
+		fmt.Printf("%s -ra arc.data \"путь/к/папке/с извлечёнными ресурсами\" - перепаковать vol файлы в архив из указанной папки с ресурсами.\n", args[0])
+		fmt.Printf("%s -la arc.data - получить список файлов в архиве.\n", args[0])
+		fmt.Printf("%s -lv arc.vol - получить список файлов в vol файле.\n", args[0])
+
 		fmt.Println("How to use my tool.")
-		fmt.Printf("%s -ea arc.data - extract files from archive. Default extraction path near tool's path.\n", args[0])
+		fmt.Printf("%s -ea arc.data - extract vol files from archive. Default extraction path near tool's path into folder Unpacked.\n", args[0])
 		fmt.Printf("%s -ea arc.data \"path/to/extracted/files\" - extract files from archive into extracted folder\n", args[0])
 		fmt.Printf("%s -ra arc.data - repack files into archive. Default resource folder is a tool's path.\n", args[0])
-		fmt.Printf("%s -ra arc.data \"path/to/extracted/files\" - repack files from resource folder into archive\n", args[0])
-		fmt.Printf("%s -la arc.data - get list of files in archive\n", args[0])
-		fmt.Printf("%s -lv arc.vol - get list of files in archive\n", args[0])
+		fmt.Printf("%s -ra arc.data \"path/to/extracted/files\" - repack files from resource folder into archive.\n", args[0])
+		fmt.Printf("%s -la arc.data - get list of files in archive.\n", args[0])
+		fmt.Printf("%s -lv arc.vol - get list of files in vol file.\n", args[0])
 	}
 
 }
