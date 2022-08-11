@@ -19,12 +19,7 @@ func main() {
 	fmt.Println("Особая благодарность aluigi за скрипт для разбора ресурсов")
 	fmt.Println("Версия 1.0")
 
-	fmt.Println("Shantae and Pirate's curse tool made by Sudakov Pavel")
-	fmt.Println("Thanks to aluigi for script")
-	fmt.Println("Version 1.0")
-
 	fmt.Println("Исходный код на GitFlic: https://gitflic.ru/project/pashok6798/shantae-tool")
-	fmt.Println("Source code on GitHub: maybe later")
 
 	if len(args) > 1 {
 		if len(args) == 3 && ((args[1] == "-la") || (args[1] == "-lv")) {
@@ -73,7 +68,7 @@ func main() {
 					os.MkdirAll(outputFilePath, 0666)
 				}
 
-				fmt.Println("Unpacking...")
+				fmt.Println("Идёт распаковка...")
 
 				if args[1] == "-ea" {
 					list, err := methods.ReadArcHeader(args[2])
@@ -127,14 +122,6 @@ func main() {
 		fmt.Printf("%s -ra arc.data \"путь/к/папке/с извлечёнными ресурсами\" - перепаковать vol файлы в архив из указанной папки с ресурсами.\n", args[0])
 		fmt.Printf("%s -la arc.data - получить список файлов в архиве.\n", args[0])
 		fmt.Printf("%s -lv arc.vol - получить список файлов в vol файле.\n", args[0])
-
-		fmt.Println("How to use my tool.")
-		fmt.Printf("%s -ea arc.data - extract vol files from archive. Default extraction path near tool's path into folder Unpacked.\n", args[0])
-		fmt.Printf("%s -ea arc.data \"path/to/extracted/files\" - extract files from archive into extracted folder\n", args[0])
-		fmt.Printf("%s -ra arc.data - repack files into archive. Default resource folder is a tool's path.\n", args[0])
-		fmt.Printf("%s -ra arc.data \"path/to/extracted/files\" - repack files from resource folder into archive.\n", args[0])
-		fmt.Printf("%s -la arc.data - get list of files in archive.\n", args[0])
-		fmt.Printf("%s -lv arc.vol - get list of files in vol file.\n", args[0])
 	}
 
 }

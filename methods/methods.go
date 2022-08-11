@@ -44,6 +44,26 @@ type ListVolFiles struct {
 	Index    int
 }
 
+type AnotherListFiles struct {
+	CRC uint
+	Offset uint64
+	NameOffset uint
+	Size uint
+	FileName string
+	index int
+}
+
+type VolAnotherHeader struct {
+	Header uint
+	Unknown1 uint16
+	Unknown2 uint16
+	Unknown3 uint
+	Unknown4 uint
+	FilesCount uint
+	InfoOff uint
+	DataOff uint
+}
+
 type VolHeader struct {
 	Header     uint
 	Unknown1   uint
@@ -95,6 +115,115 @@ func SortUD(data []UnknownStruct) []UnknownStruct {
 	}
 
 	return data
+}
+
+func ReadFileHeader(fileName string) (volHead []ListVolFiles, volAnHead []VolAnotherHeader, err error) {
+	file, err := os.Open(fileName)
+
+	if err != nil {
+		return nil, nil, err
+	}
+	defer file.Close()
+
+	stats, statsErr := file.Stat()
+
+	if statsErr != nil {
+		return nil, nil, statsErr
+	}
+
+	var size int64 = stats.Size()
+
+	if size <= 0 {
+		err = errors.New("Vol stat: File either empty or it doesn't exists")
+		return nil, nil, err
+	}
+
+	tmpByte := make([]byte, 4)
+	_, err = file.Read(tmpByte)
+
+	if err != nil {
+		return err
+	}
+
+	checkHeader := binary.LittleEndian.UInt32(tmpByte)
+
+	switch checkHeader {
+	case 0x9ee6c000:
+		volHead, err = ReadVolHeader(fileName)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		break
+
+	case 0xb53d32cb:
+		volAnHead, err = ReadAnotherVolHeader(fileName)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		break
+	}
+
+	return
+}
+
+func ReadAnotherVolHeader(fileName string) (volAnHead []VolAnotherHeader, err error) {
+	file, err := os.Open(fileName)
+
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var head VolAnotherHeader
+	tmpByte := make([]byte, 4)
+	_, err = file.Read(tmpByte)
+	head.Header = uint(binary.LittleEndian.UInt32(tmpByte))
+
+	tmpByte = make([]byte, 2)
+	_, err = file.Read(tmpByte)
+	head.Unknown1 = binary.LittleEndian.UInt16(tmpByte)
+
+	tmpByte = make([]byte, 2)
+	_, err = file.Read(tmpByte)
+	head.Unknown2 = binary.LittleEndian.UInt16(tmpByte)
+
+	tmpByte = make([]byte, 4)
+	_, err = file.Read(tmpByte)
+	head.Unknown3 = uint(binary.LittleEndian.UInt32(tmpByte))
+
+	if head.Unknown3 == 0x31 {
+		tmpByte := make([]byte, 4)
+		_, err = file.Read(tmpByte)
+		head.FilesCount = uint(binary.LittleEndian.UInt32(tmpByte))
+
+		tmpByte := make([]byte, 4)
+		_, err = file.Read(tmpByte)
+		head.InfoOff = uint(binary.LittleEndian.UInt32(tmpByte))
+
+		tmpByte := make([]byte, 4)
+		_, err = file.Read(tmpByte)
+		head.DataOff = uint(binary.LittleEndian.UInt32(tmpByte))
+	} else {
+		tmpByte = make([]byte, 4)
+		_, err = file.Read(tmpByte)
+		head.Unknown4 = uint(binary.LittleEndian.UInt32(tmpByte))
+
+		tmpByte := make([]byte, 4)
+		_, err = file.Read(tmpByte)
+		head.DataOff = uint(binary.LittleEndian.UInt32(tmpByte))
+
+		tmpByte := make([]byte, 4)
+		_, err = file.Read(tmpByte)
+		head.FilesCount = uint(binary.LittleEndian.UInt32(tmpByte))
+
+		tmpByte := make([]byte, 4)
+		_, err = file.Read(tmpByte)
+		head.InfoOff = uint(binary.LittleEndian.UInt32(tmpByte))
+	}
 }
 
 func ReadVolHeader(fileName string) (volHead []ListVolFiles, err error) {
