@@ -3,6 +3,7 @@ package methods
 import (
 	"bytes"
 	"compress/flate"
+	"strings"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -89,6 +90,18 @@ func UnpackArchive(listFiles []ListFiles, fileName string, outputDir string) (er
 
 		if !os.IsNotExist(err) {
 			os.Remove(outputDir + "/" + listFiles[i].FileName)
+		}
+
+		if strings.ContainsAny(listFiles[i].FileName, "/") {
+			dirPath := listFiles[i].FileName[:strings.LastIndex(listFiles[i].FileName, "/") + 1]
+
+			fmt.Println(dirPath)
+
+			_, err = os.Stat(outputDir + "/" + dirPath)
+
+			if os.IsNotExist(err) {
+				os.MkdirAll(outputDir + "/" + dirPath, os.ModePerm)
+			}
 		}
 
 		outFile, err := os.Create(outputDir + "/" + listFiles[i].FileName)

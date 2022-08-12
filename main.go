@@ -81,7 +81,7 @@ func main() {
 				_, err = os.Stat(outputFilePath)
 
 				if os.IsNotExist(err) {
-					os.MkdirAll(outputFilePath, 0666)
+					os.MkdirAll(outputFilePath, os.ModePerm)
 				}
 
 				fmt.Println("Идёт распаковка...")

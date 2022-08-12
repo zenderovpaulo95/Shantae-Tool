@@ -3,8 +3,6 @@ package methods
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
-	"io"
 	"os"
 	"strings"
 )
@@ -202,7 +200,7 @@ func ReadAnotherVolHeader(fileName string) (volAnHead []AnotherListFiles, err er
 	_, err = file.Read(tmpByte)
 	head.Unknown3 = uint(binary.LittleEndian.Uint32(tmpByte))
 
-	if head.Unknown3 == 0x31 {
+	if head.Unknown3 == 0x1C {
 		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
 		head.FilesCount = uint(binary.LittleEndian.Uint32(tmpByte))
@@ -256,32 +254,27 @@ func ReadAnotherVolHeader(fileName string) (volAnHead []AnotherListFiles, err er
 		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
 		volAnHead[i].Size = uint(binary.LittleEndian.Uint32(tmpByte))
-
-		currOffset, err := file.Seek(0, io.SeekCurrent)
-
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = file.Seek(int64(volAnHead[i].NameOffset), 0)
-
-		tmpByte = make([]byte, 1)
-		tmpByte[0] = 0xFF
-
-		var len int = 0
-
-		for ; tmpByte[0] != 0; len++ {
-			tmpByte = make([]byte, 1)
-			_, err = file.Read(tmpByte)
-		}
-
-		_, err = file.Seek(int64(volAnHead[i].NameOffset), 0)
-		tmpByte = make([]byte, len-1)
-		_, err = file.Read(tmpByte)
-		volAnHead[i].FileName = string(tmpByte)
-		volAnHead[i].FileName = strings.Replace(volAnHead[i].FileName, "_", "/", -1)
-		fmt.Println(volAnHead[i].FileName)
 	}
+
+  for i := 0; i < int(head.FilesCount); i++ {
+	  _, err = file.Seek(int64(volAnHead[i].NameOffset), 0)
+
+	  tmpByte = make([]byte, 1)
+	  tmpByte[0] = 0xFF
+
+	  var len int = 0
+
+	  for ; tmpByte[0] != 0; len++ {
+		  tmpByte = make([]byte, 1)
+		  _, err = file.Read(tmpByte)
+	  }
+
+	  _, err = file.Seek(int64(volAnHead[i].NameOffset), 0)
+	  tmpByte = make([]byte, len-1)
+	  _, err = file.Read(tmpByte)
+	  volAnHead[i].FileName = string(tmpByte)
+	  volAnHead[i].FileName = strings.Replace(volAnHead[i].FileName, "_", "/", -1)
+  }
 
 	return
 }
@@ -396,6 +389,7 @@ func ReadVolHeader(fileName string) (volHead []ListVolFiles, err error) {
 		tmpByte = make([]byte, len-1)
 		_, err = file.Read(tmpByte)
 		volHead[i].FileName = string(tmpByte)
+		volHead[i].FileName = strings.Replace(volHead[i].FileName, "_", "/", -1)
 		off += uint(len)
 	}
 
@@ -567,6 +561,12 @@ func ReadArcHeader(fileName string) (arcHead []ListFiles, err error) {
 		tmpByte = make([]byte, len-1)
 		_, err = file.Read(tmpByte)
 		arcHead[i].FileName = string(tmpByte)
+		arcHead[i].FileName = strings.Replace(arcHead[i].FileName, "_", "/", -1)
+
+		/*fileName := arcHead[i].FileName[strings.LastIndex(arcHead[i].FileName, "/") + 1:]
+		dirPath := arcHead[i].FileName[:strings.LastIndex(arcHead[i].FileName, "/") + 1]
+		fmt.Println(dirPath)
+		fmt.Println(fileName)*/
 	}
 
 	return
