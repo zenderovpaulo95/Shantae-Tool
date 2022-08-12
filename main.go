@@ -35,7 +35,7 @@ func main() {
 						fmt.Printf("%d. %016x\t%d     %s\n", (i + 1), list[i].FileOffset, list[i].UncompressedSize, list[i].FileName)
 					}
 				} else {
-					list, err := methods.ReadVolHeader(args[2])
+					/*list, err := methods.ReadVolHeader(args[2])
 
 					if err != nil {
 						panic(err)
@@ -43,6 +43,22 @@ func main() {
 
 					for i := 0; i < len(list); i++ {
 						fmt.Printf("%d. %08x\t%d     %s\n", (i + 1), list[i].Offset, list[i].Size, list[i].FileName)
+					}*/
+
+					volList, anotherVolList, err := methods.ReadFileHeader(args[2])
+
+					if err != nil {
+						panic(err)
+					}
+
+					if volList != nil {
+						for i := 0; i < len(volList); i++ {
+							fmt.Printf("%d. %08x\t%d     %s\n", (i + 1), volList[i].Offset, volList[i].Size, volList[i].FileName)
+						}
+					} else {
+						for i := 0; i < len(anotherVolList); i++ {
+							fmt.Printf("%d. %08x\t%d     %s\n", (i + 1), anotherVolList[i].Offset, anotherVolList[i].Size, anotherVolList[i].FileName)
+						}
 					}
 				}
 			}
