@@ -94,10 +94,24 @@ func main() {
 						panic(err)
 					}
 				} else {
-					list, err := methods.ReadVolHeader(args[2])
-					err = methods.UnpackVol(list, args[2], outputFilePath)
+					volList, anotherVolList, err := methods.ReadFileHeader(args[2])
+
 					if err != nil {
 						panic(err)
+					}
+
+					if volList != nil {
+						err = methods.UnpackVol(volList, args[2], outputFilePath)
+
+						if err != nil {
+							panic(err)
+						}
+					} else {
+						err = methods.UnpackAnotherVol(anotherVolList, args[2], outputFilePath)
+
+						if err != nil {
+							panic(err)
+						}
 					}
 				}
 			}
