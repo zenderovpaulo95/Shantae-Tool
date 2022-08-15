@@ -10,9 +10,17 @@ import (
 )
 
 func RepackAnotherVol(listFiles []AnotherListFiles, fileName string, outputDir string) (err error) {
-	file, err := os.Open(fileName)
+	//file, err := os.Open(fileName)
 
-	if err != nil {
+  listFiles = SortAnotherVolListFiles(listFiles)
+
+  for i := 0; i < len(listFiles); i++ {
+		fmt.Println(listFiles[i].Offset)
+	}
+
+	err = nil
+
+	/*if err != nil {
 		return err
 	}
 	defer file.Close()
@@ -55,15 +63,21 @@ func RepackAnotherVol(listFiles []AnotherListFiles, fileName string, outputDir s
 		outFile.Write(tmpByte)
 
 		fmt.Printf("%d. %08x\t%d     %s\n", (i + 1), listFiles[i].Offset, listFiles[i].Size, listFiles[i].FileName)
-	}
+	}*/
 
 	return
 }
 
 func RepackVol(listFiles []ListVolFiles, fileName string, outputDir string) (err error) {
-	file, err := os.Open(fileName)
+	//file, err := os.Open(fileName)
+	listFiles = SortVolListFiles(listFiles)
 
-	if err != nil {
+	for i := 0; i < len(listFiles); i++ {
+		fmt.Println(listFiles[i].Offset)
+	}
+
+	err = nil
+	/*if err != nil {
 		return err
 	}
 	defer file.Close()
@@ -107,7 +121,7 @@ func RepackVol(listFiles []ListVolFiles, fileName string, outputDir string) (err
 		outFile.Write(tmpByte)
 
 		fmt.Printf("%d. %08x\t%d     %s\n", (i + 1), listFiles[i].Offset, listFiles[i].Size, listFiles[i].FileName)
-	}
+	}*/
 
 	return
 }

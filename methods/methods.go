@@ -94,7 +94,7 @@ func SortListFiles(arcHead []ListFiles) []ListFiles {
 
 func SortVolListFiles(volHead []ListVolFiles) []ListVolFiles {
 	for i := 1; i < len(volHead); i++ {
-		for j := i; i > 0; j-- {
+		for j := i; j > 0; j-- {
 			if volHead[j-1].Offset > volHead[j].Offset {
 				tmpVol := volHead[j-1]
 				volHead[j-1] = volHead[j]

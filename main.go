@@ -144,6 +144,26 @@ func main() {
 		if ((len(args) == 3) || (len(args) == 4)) && args[1] == "-ra" {
 			//Do something later...
 		}
+		if ((len(args) == 3) || (len(args) == 4)) && args[1] == "-rv" {
+			volFiles, anotherVolFiles, err := methods.ReadFileHeader(args[2])
+
+			if err != nil {
+				panic(err)
+			}
+
+			if volFiles != nil {
+				err = methods.RepackVol(volFiles, args[2], "Unpacked")
+				if err != nil {
+					panic(err)
+				}
+			} else {
+				err = methods.RepackAnotherVol(anotherVolFiles, args[2], "Unpacked")
+
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
 	} else {
 		fmt.Println("Как пользоваться программой.")
 		fmt.Printf("%s -ea arc.data - извлечь vol файлы из архива. По умолчанию файлы извлекутся рядом с программой в папку Unpacked.\n", args[0])
