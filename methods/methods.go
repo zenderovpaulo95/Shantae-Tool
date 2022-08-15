@@ -89,6 +89,34 @@ func SortListFiles(arcHead []ListFiles) []ListFiles {
 	return arcHead
 }
 
+func SortVolListFiles(volHead []ListVolFiles) []ListVolFiles {
+	for i := 1; i < len(volHead); i++ {
+		for j := i; i > 0; j-- {
+			if volHead[j-1].Offset > volHead[j].Offset {
+				tmpVol := volHead[j-1]
+				volHead[j-1] = volHead[j]
+				volHead[j] = tmpVol
+			}
+		}
+	}
+
+	return volHead
+}
+
+func SortAnotherVolListFiles(AnotherVolHead []AnotherListFiles) []AnotherListFiles {
+	for i := 1; i < len(AnotherVolHead); i++ {
+		for j := i; j > 0; j-- {
+			if AnotherVolHead[j-1].Offset > AnotherVolHead[j].Offset {
+				tmpAnVol := AnotherVolHead[j-1]
+				AnotherVolHead[j-1] = AnotherVolHead[j]
+				AnotherVolHead[j] = tmpAnVol
+			}
+		}
+	}
+
+	return AnotherVolHead
+}
+
 func SortFonts(chars []Coordinates) []Coordinates {
 	for i := 1; i < len(chars); i++ {
 		for j := i; j > 0; j-- {
@@ -256,25 +284,25 @@ func ReadAnotherVolHeader(fileName string) (volAnHead []AnotherListFiles, err er
 		volAnHead[i].Size = uint(binary.LittleEndian.Uint32(tmpByte))
 	}
 
-  for i := 0; i < int(head.FilesCount); i++ {
-	  _, err = file.Seek(int64(volAnHead[i].NameOffset), 0)
+	for i := 0; i < int(head.FilesCount); i++ {
+		_, err = file.Seek(int64(volAnHead[i].NameOffset), 0)
 
-	  tmpByte = make([]byte, 1)
-	  tmpByte[0] = 0xFF
+		tmpByte = make([]byte, 1)
+		tmpByte[0] = 0xFF
 
-	  var len int = 0
+		var len int = 0
 
-	  for ; tmpByte[0] != 0; len++ {
-		  tmpByte = make([]byte, 1)
-		  _, err = file.Read(tmpByte)
-	  }
+		for ; tmpByte[0] != 0; len++ {
+			tmpByte = make([]byte, 1)
+			_, err = file.Read(tmpByte)
+		}
 
-	  _, err = file.Seek(int64(volAnHead[i].NameOffset), 0)
-	  tmpByte = make([]byte, len-1)
-	  _, err = file.Read(tmpByte)
-	  volAnHead[i].FileName = string(tmpByte)
-	  volAnHead[i].FileName = strings.Replace(volAnHead[i].FileName, "_", "/", -1)
-  }
+		_, err = file.Seek(int64(volAnHead[i].NameOffset), 0)
+		tmpByte = make([]byte, len-1)
+		_, err = file.Read(tmpByte)
+		volAnHead[i].FileName = string(tmpByte)
+		volAnHead[i].FileName = strings.Replace(volAnHead[i].FileName, "_", "/", -1)
+	}
 
 	return
 }
