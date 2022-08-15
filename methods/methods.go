@@ -3,6 +3,7 @@ package methods
 import (
 	"encoding/binary"
 	"errors"
+	"io"
 	"os"
 	"strings"
 )
@@ -35,6 +36,7 @@ type ArcHeader struct {
 }
 
 type ListVolFiles struct {
+	blockOff int64 //Для смещения самих блоков с данными
 	CRC      uint
 	Unknown1 uint
 	Offset   uint
@@ -46,6 +48,7 @@ type ListVolFiles struct {
 }
 
 type AnotherListFiles struct {
+	blockOff   int64 //Для смещения самих блоков с данными
 	CRC        uint
 	Offset     uint64
 	NameOffset uint
@@ -267,6 +270,7 @@ func ReadAnotherVolHeader(fileName string) (volAnHead []AnotherListFiles, err er
 	volAnHead = make([]AnotherListFiles, head.FilesCount)
 
 	for i := 0; i < int(head.FilesCount); i++ {
+		volAnHead[i].blockOff, err = file.Seek(0, io.SeekCurrent)
 		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
 		volAnHead[i].CRC = uint(binary.LittleEndian.Uint32(tmpByte))
@@ -370,6 +374,7 @@ func ReadVolHeader(fileName string) (volHead []ListVolFiles, err error) {
 
 	//Считываю сначала списки по 24 байта
 	for i := 0; i < head.FileCount; i++ {
+		volHead[i].blockOff, err = file.Seek(0, io.SeekCurrent)
 		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
 		volHead[i].CRC = uint(binary.LittleEndian.Uint32(tmpByte))
@@ -590,11 +595,6 @@ func ReadArcHeader(fileName string) (arcHead []ListFiles, err error) {
 		_, err = file.Read(tmpByte)
 		arcHead[i].FileName = string(tmpByte)
 		arcHead[i].FileName = strings.Replace(arcHead[i].FileName, "_", "/", -1)
-
-		/*fileName := arcHead[i].FileName[strings.LastIndex(arcHead[i].FileName, "/") + 1:]
-		dirPath := arcHead[i].FileName[:strings.LastIndex(arcHead[i].FileName, "/") + 1]
-		fmt.Println(dirPath)
-		fmt.Println(fileName)*/
 	}
 
 	return
