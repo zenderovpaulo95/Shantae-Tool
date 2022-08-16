@@ -36,8 +36,6 @@ func UnpackAnotherVol(listFiles []AnotherListFiles, fileName string, outputDir s
 		if strings.ContainsAny(listFiles[i].FileName, "/") {
 			dirPath := listFiles[i].FileName[:strings.LastIndex(listFiles[i].FileName, "/")+1]
 
-			fmt.Println(dirPath)
-
 			_, err = os.Stat(outputDir + "/" + dirPath)
 
 			if os.IsNotExist(err) {
@@ -86,8 +84,6 @@ func UnpackVol(listFiles []ListVolFiles, fileName string, outputDir string) (err
 
 		if strings.ContainsAny(listFiles[i].FileName, "/") {
 			dirPath := listFiles[i].FileName[:strings.LastIndex(listFiles[i].FileName, "/")+1]
-
-			fmt.Println(dirPath)
 
 			_, err = os.Stat(outputDir + "/" + dirPath)
 
@@ -157,8 +153,6 @@ func UnpackArchive(listFiles []ListFiles, fileName string, outputDir string) (er
 
 		if strings.ContainsAny(listFiles[i].FileName, "/") {
 			dirPath := listFiles[i].FileName[:strings.LastIndex(listFiles[i].FileName, "/")+1]
-
-			fmt.Println(dirPath)
 
 			_, err = os.Stat(outputDir + "/" + dirPath)
 
