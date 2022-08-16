@@ -3,10 +3,10 @@ package methods
 import (
 	"bytes"
 	"compress/flate"
-	"strings"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 func UnpackAnotherVol(listFiles []AnotherListFiles, fileName string, outputDir string) (err error) {
@@ -34,14 +34,14 @@ func UnpackAnotherVol(listFiles []AnotherListFiles, fileName string, outputDir s
 		}
 
 		if strings.ContainsAny(listFiles[i].FileName, "/") {
-			dirPath := listFiles[i].FileName[:strings.LastIndex(listFiles[i].FileName, "/") + 1]
+			dirPath := listFiles[i].FileName[:strings.LastIndex(listFiles[i].FileName, "/")+1]
 
 			fmt.Println(dirPath)
 
 			_, err = os.Stat(outputDir + "/" + dirPath)
 
 			if os.IsNotExist(err) {
-				os.MkdirAll(outputDir + "/" + dirPath, os.ModePerm)
+				os.MkdirAll(outputDir+"/"+dirPath, os.ModePerm)
 			}
 		}
 
@@ -85,21 +85,20 @@ func UnpackVol(listFiles []ListVolFiles, fileName string, outputDir string) (err
 		}
 
 		if strings.ContainsAny(listFiles[i].FileName, "/") {
-			dirPath := listFiles[i].FileName[:strings.LastIndex(listFiles[i].FileName, "/") + 1]
+			dirPath := listFiles[i].FileName[:strings.LastIndex(listFiles[i].FileName, "/")+1]
 
 			fmt.Println(dirPath)
 
 			_, err = os.Stat(outputDir + "/" + dirPath)
 
 			if os.IsNotExist(err) {
-				os.MkdirAll(outputDir + "/" + dirPath, os.ModePerm)
+				os.MkdirAll(outputDir+"/"+dirPath, os.ModePerm)
 			}
 		}
 
 		outFile, err := os.Create(outputDir + "/" + listFiles[i].FileName)
 
 		if err != nil {
-			fmt.Println("FUCK!")
 			return err
 		}
 		defer outFile.Close()
@@ -157,14 +156,14 @@ func UnpackArchive(listFiles []ListFiles, fileName string, outputDir string) (er
 		}
 
 		if strings.ContainsAny(listFiles[i].FileName, "/") {
-			dirPath := listFiles[i].FileName[:strings.LastIndex(listFiles[i].FileName, "/") + 1]
+			dirPath := listFiles[i].FileName[:strings.LastIndex(listFiles[i].FileName, "/")+1]
 
 			fmt.Println(dirPath)
 
 			_, err = os.Stat(outputDir + "/" + dirPath)
 
 			if os.IsNotExist(err) {
-				os.MkdirAll(outputDir + "/" + dirPath, os.ModePerm)
+				os.MkdirAll(outputDir+"/"+dirPath, os.ModePerm)
 			}
 		}
 

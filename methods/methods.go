@@ -3,7 +3,6 @@ package methods
 import (
 	"encoding/binary"
 	"errors"
-	"io"
 	"os"
 	"strings"
 )
@@ -36,9 +35,8 @@ type ArcHeader struct {
 }
 
 type ListVolFiles struct {
-	blockOff int64 //Для смещения самих блоков с данными
 	CRC      uint
-	Unknown1 uint
+	Unknown1 uint //Смешение к названию файла
 	Offset   uint
 	Zero1    uint
 	Zero2    uint
@@ -48,13 +46,12 @@ type ListVolFiles struct {
 }
 
 type AnotherListFiles struct {
-	blockOff   int64 //Для смещения самих блоков с данными
 	CRC        uint
 	Offset     uint64
 	NameOffset uint
 	Size       uint
 	FileName   string
-	index      int
+	Index      int
 }
 
 type VolAnotherHeader struct {
@@ -90,6 +87,14 @@ func SortListFiles(arcHead []ListFiles) []ListFiles {
 	}
 
 	return arcHead
+}
+
+func PadSize(inSize int64) int64 {
+	for inSize%16 != 0 {
+		inSize++
+	}
+
+	return inSize
 }
 
 func SortVolListFiles(volHead []ListVolFiles) []ListVolFiles {
@@ -270,7 +275,6 @@ func ReadAnotherVolHeader(fileName string) (volAnHead []AnotherListFiles, err er
 	volAnHead = make([]AnotherListFiles, head.FilesCount)
 
 	for i := 0; i < int(head.FilesCount); i++ {
-		volAnHead[i].blockOff, err = file.Seek(0, io.SeekCurrent)
 		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
 		volAnHead[i].CRC = uint(binary.LittleEndian.Uint32(tmpByte))
@@ -286,6 +290,8 @@ func ReadAnotherVolHeader(fileName string) (volAnHead []AnotherListFiles, err er
 		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
 		volAnHead[i].Size = uint(binary.LittleEndian.Uint32(tmpByte))
+
+		volAnHead[i].Index = i
 	}
 
 	for i := 0; i < int(head.FilesCount); i++ {
@@ -374,7 +380,6 @@ func ReadVolHeader(fileName string) (volHead []ListVolFiles, err error) {
 
 	//Считываю сначала списки по 24 байта
 	for i := 0; i < head.FileCount; i++ {
-		volHead[i].blockOff, err = file.Seek(0, io.SeekCurrent)
 		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
 		volHead[i].CRC = uint(binary.LittleEndian.Uint32(tmpByte))
@@ -399,7 +404,7 @@ func ReadVolHeader(fileName string) (volHead []ListVolFiles, err error) {
 		_, err = file.Read(tmpByte)
 		volHead[i].Size = uint(binary.LittleEndian.Uint32(tmpByte))
 
-		volHead[i].Index = (i + 1)
+		volHead[i].Index = i
 	}
 
 	off := head.FileOffset + uint(24*head.FileCount)
@@ -523,7 +528,7 @@ func ReadArcHeader(fileName string) (arcHead []ListFiles, err error) {
 
 	//Просчитываю индексы для будущих списков
 	for i := 0; i < head.FilesCount; i++ {
-		arcHead[i].Index = i + 1
+		arcHead[i].Index = i
 	}
 
 	//Считываю логику сжатых файлов (сжаты файлы или нет)

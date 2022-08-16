@@ -145,22 +145,43 @@ func main() {
 			//Do something later...
 		}
 		if ((len(args) == 3) || (len(args) == 4)) && args[1] == "-rv" {
-			volFiles, anotherVolFiles, err := methods.ReadFileHeader(args[2])
+			if _, err := os.Stat(args[2]); err == nil {
+				outputFilePath := filepath.Dir(args[0]) + "/Unpacked"
 
-			if err != nil {
-				panic(err)
-			}
+				if len(args) == 4 {
+					_, err = os.Stat(args[3])
 
-			if volFiles != nil {
-				err = methods.RepackVol(volFiles, args[2], "Unpacked")
+					if os.IsNotExist(err) {
+						panic(err)
+					}
+
+					outputFilePath = args[3]
+				}
+
+				_, err = os.Stat(outputFilePath)
+
+				if os.IsNotExist(err) {
+					os.MkdirAll(outputFilePath, os.ModePerm)
+				}
+
+				fmt.Println("Идёт запаковка...")
+				volFiles, anotherVolFiles, err := methods.ReadFileHeader(args[2])
+
 				if err != nil {
 					panic(err)
 				}
-			} else {
-				err = methods.RepackAnotherVol(anotherVolFiles, args[2], "Unpacked")
 
-				if err != nil {
-					panic(err)
+				if volFiles != nil {
+					err = methods.RepackVol(volFiles, args[2], outputFilePath)
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					err = methods.RepackAnotherVol(anotherVolFiles, args[2], outputFilePath)
+
+					if err != nil {
+						panic(err)
+					}
 				}
 			}
 		}
