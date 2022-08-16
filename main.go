@@ -141,10 +141,7 @@ func main() {
 				fmt.Printf("%d\t%d\t%d\t%d\t%x\n", font.UnknownData[i].Unknown1, font.UnknownData[i].Unknown2, font.UnknownData[i].Unknown3, font.UnknownData[i].Unknown4, font.UnknownData[i].Unknown5)
 			}
 		}
-		if ((len(args) == 3) || (len(args) == 4)) && args[1] == "-ra" {
-			//Do something later...
-		}
-		if ((len(args) == 3) || (len(args) == 4)) && args[1] == "-rv" {
+		if ((len(args) == 3) || (len(args) == 4)) && ((args[1] == "-ra") || (args[1] == "-rv")) {
 			if _, err := os.Stat(args[2]); err == nil {
 				outputFilePath := filepath.Dir(args[0]) + "/Unpacked"
 
@@ -165,22 +162,33 @@ func main() {
 				}
 
 				fmt.Println("Идёт запаковка...")
-				volFiles, anotherVolFiles, err := methods.ReadFileHeader(args[2])
 
-				if err != nil {
-					panic(err)
-				}
+				if args[1] == "-ra" {
+					list, err := methods.ReadArcHeader(args[2])
+					err = methods.RepackArchive(list, args[2], outputFilePath)
 
-				if volFiles != nil {
-					err = methods.RepackVol(volFiles, args[2], outputFilePath)
 					if err != nil {
 						panic(err)
 					}
 				} else {
-					err = methods.RepackAnotherVol(anotherVolFiles, args[2], outputFilePath)
+					volList, anotherVolList, err := methods.ReadFileHeader(args[2])
 
 					if err != nil {
 						panic(err)
+					}
+
+					if volList != nil {
+						err = methods.RepackVol(volList, args[2], outputFilePath)
+
+						if err != nil {
+							panic(err)
+						}
+					} else {
+						err = methods.RepackAnotherVol(anotherVolList, args[2], outputFilePath)
+
+						if err != nil {
+							panic(err)
+						}
 					}
 				}
 			}
