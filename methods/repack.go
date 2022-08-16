@@ -140,7 +140,7 @@ func RepackVol(listFiles []ListVolFiles, fileName string, resourceDir string) (e
 
 		_, _ = newFile.Seek(int64(listFilesOff+(uint32(listFiles[i].Index)*24)+20), 0)
 		tmpByte = make([]byte, 4)
-		binary.LittleEndian.PutUint32(tmpByte, uint32(listFiles[i].Offset))
+		binary.LittleEndian.PutUint32(tmpByte, uint32(listFiles[i].Size))
 		newFile.Write(tmpByte)
 
 		fmt.Printf("Индекс: %d\tСмещение: %x\n", listFiles[i].Index, listFiles[i].Offset)
