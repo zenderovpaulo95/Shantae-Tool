@@ -63,6 +63,7 @@ type VolAnotherHeader struct {
 	FilesCount uint
 	InfoOff    uint
 	DataOff    uint
+	FileSize   uint
 }
 
 type VolHeader struct {
@@ -248,6 +249,10 @@ func ReadAnotherVolHeader(fileName string) (volAnHead []AnotherListFiles, err er
 		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
 		head.DataOff = uint(binary.LittleEndian.Uint32(tmpByte))
+
+		tmpByte = make([]byte, 4)
+		_, err = file.Read(tmpByte)
+		head.FileSize = uint(binary.LittleEndian.Uint32(tmpByte))
 	} else {
 		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
@@ -264,6 +269,10 @@ func ReadAnotherVolHeader(fileName string) (volAnHead []AnotherListFiles, err er
 		tmpByte = make([]byte, 4)
 		_, err = file.Read(tmpByte)
 		head.InfoOff = uint(binary.LittleEndian.Uint32(tmpByte))
+
+		tmpByte = make([]byte, 4)
+		_, err = file.Read(tmpByte)
+		head.FileSize = uint(binary.LittleEndian.Uint32(tmpByte))
 	}
 
 	_, err = file.Seek(int64(head.InfoOff), 0)
