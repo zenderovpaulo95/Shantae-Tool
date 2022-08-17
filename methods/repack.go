@@ -205,8 +205,7 @@ func RepackArchive(listFiles []ListFiles, fileName string, resourceDir string) (
 		listFiles[i].FileOffset = offset
 		tmpFile, err := os.Open(resourceDir + "/" + listFiles[i].FileName)
 		if err != nil {
-			panic(err)
-			//return err
+			return err
 		}
 		defer tmpFile.Close()
 
