@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
-	"io"
 )
 
 func RepackAnotherVol(listFiles []AnotherListFiles, fileName string, resourceDir string) (err error) {
@@ -205,8 +204,7 @@ func RepackArchive(listFiles []ListFiles, fileName string, resourceDir string) (
 		listFiles[i].FileOffset = offset
 		tmpFile, err := os.Open(resourceDir + "/" + listFiles[i].FileName)
 		if err != nil {
-			panic(err)
-			//return err
+			return err
 		}
 		defer tmpFile.Close()
 
@@ -217,7 +215,6 @@ func RepackArchive(listFiles []ListFiles, fileName string, resourceDir string) (
 		tmpFile.Read(tmpByte)
 
 		if listFiles[i].IsCompressed {
-			r := bytes.NewReader(tmpByte)
 			var b bytes.Buffer
 			flateWriter, err := flate.NewWriter(&b, flate.BestCompression)
 
@@ -225,42 +222,40 @@ func RepackArchive(listFiles []ListFiles, fileName string, resourceDir string) (
 				panic(err)
 			}
 
-			io.Copy(flateWriter, r)
+			_, err = flateWriter.Write(tmpByte)
+			if err != nil {
+				fmt.Printf("%s\n", err.Error())
+			}
+
+			flateWriter.Close()
 
 			listFiles[i].CompressedSize = uint64(b.Len())
-			paddedSize := PadSize(int64(listFiles[i].CompressedSize))
+			newFile.Write(b.Bytes())
 
-			tmpByte = make([]byte, paddedSize)
-			copy(tmpByte, b.Bytes())
-			newFile.Write(tmpByte)
-
-			flateWriter.Flush()
-
-			offset += uint64(paddedSize)
+			offset += listFiles[i].CompressedSize
 		} else {
-			paddedSize := PadSize(int64(listFiles[i].UncompressedSize))
-			tmpB := make([]byte, paddedSize)
-			copy(tmpB, tmpByte)
-			newFile.Write(tmpB)
-			offset += uint64(paddedSize)
+			newFile.Write(tmpByte)
+			offset += listFiles[i].UncompressedSize
 		}
 
-		newFile.Seek(int64(cSizeOff + uint(listFiles[i].Index * 8)), 0)
+		newFile.Seek(int64(cSizeOff+uint(listFiles[i].Index*8)), 0)
 		tmpByte = make([]byte, 8)
 		binary.LittleEndian.PutUint64(tmpByte, listFiles[i].CompressedSize)
 		newFile.Write(tmpByte)
 
-		newFile.Seek(int64(SizeOff + uint(listFiles[i].Index * 8)), 0)
+		newFile.Seek(int64(SizeOff+uint(listFiles[i].Index*8)), 0)
 		tmpByte = make([]byte, 8)
 		binary.LittleEndian.PutUint64(tmpByte, listFiles[i].UncompressedSize)
 		newFile.Write(tmpByte)
 
-		newFile.Seek(int64(FileOffs + uint(listFiles[i].Index * 8)), 0)
+		newFile.Seek(int64(FileOffs+uint(listFiles[i].Index*8)), 0)
 		tmpByte = make([]byte, 8)
 		binary.LittleEndian.PutUint64(tmpByte, listFiles[i].FileOffset)
 		newFile.Write(tmpByte)
 
-		fmt.Printf("%d. %016x\t%d\t%d\t%d     %s\n", (i + 1), listFiles[i].FileOffset, listFiles[i].UncompressedSize, listFiles[i].CompressedSize, listFiles[i].IsCompressed, listFiles[i].FileName)
+		tmpByte = nil
+
+		fmt.Printf("%d. %016x\t%d     %s\n", (i + 1), listFiles[i].FileOffset, listFiles[i].UncompressedSize, listFiles[i].FileName)
 	}
 	return nil
 }
