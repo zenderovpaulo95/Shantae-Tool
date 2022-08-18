@@ -141,6 +141,13 @@ func main() {
 				fmt.Printf("%d\t%d\t%d\t%d\t%x\n", font.UnknownData[i].Unknown1, font.UnknownData[i].Unknown2, font.UnknownData[i].Unknown3, font.UnknownData[i].Unknown4, font.UnknownData[i].Unknown5)
 			}
 		}
+		if (len(args) == 3) && (args[1] == "-lt") {
+			_, err := methods.ReadTextHeader(args[2])
+
+			if err != nil {
+				panic(err)
+			}
+		}
 		if ((len(args) == 3) || (len(args) == 4)) && ((args[1] == "-ra") || (args[1] == "-rv")) {
 			if _, err := os.Stat(args[2]); err == nil {
 				outputFilePath := filepath.Dir(args[0]) + "/Unpacked"
