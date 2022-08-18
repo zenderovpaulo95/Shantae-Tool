@@ -35,16 +35,6 @@ func main() {
 						fmt.Printf("%d. %016x\t%d     %s\n", (i + 1), list[i].FileOffset, list[i].UncompressedSize, list[i].FileName)
 					}
 				} else {
-					/*list, err := methods.ReadVolHeader(args[2])
-
-					if err != nil {
-						panic(err)
-					}
-
-					for i := 0; i < len(list); i++ {
-						fmt.Printf("%d. %08x\t%d     %s\n", (i + 1), list[i].Offset, list[i].Size, list[i].FileName)
-					}*/
-
 					volList, anotherVolList, err := methods.ReadFileHeader(args[2])
 
 					if err != nil {
@@ -142,10 +132,47 @@ func main() {
 			}
 		}
 		if (len(args) == 3) && (args[1] == "-lt") {
-			_, err := methods.ReadTextHeader(args[2])
+			text, err := methods.ReadTextHeader(args[2])
 
 			if err != nil {
 				panic(err)
+			}
+
+			for i := 0; i < int(text.CountTexts); i++ {
+				for j := 0; j < int(text.CountLocTexts); j++ {
+					fmt.Printf("%d. %s\n", (j + 1), text.TextStrings[i].Texts[j])
+				}
+
+				fmt.Println()
+			}
+		}
+		if ((len(args) == 3) || (len(args) == 4)) && (args[1] == "-et") {
+			if _, err := os.Stat(args[2]); err == nil {
+				outputFilePath := filepath.Dir(args[0]) + "/Unpacked"
+
+				if len(args) == 4 {
+					_, err = os.Stat(args[3])
+
+					if os.IsNotExist(err) {
+						panic(err)
+					}
+
+					outputFilePath = args[3]
+				}
+
+				_, err = os.Stat(outputFilePath)
+
+				if os.IsNotExist(err) {
+					os.MkdirAll(outputFilePath, os.ModePerm)
+				}
+
+				text, err := methods.ReadTextHeader(args[2])
+				err = methods.ExtractText(text, args[2], outputFilePath)
+				if err != nil {
+					panic(err)
+				}
+
+				fmt.Println("Файл успешно извлечён.")
 			}
 		}
 		if ((len(args) == 3) || (len(args) == 4)) && ((args[1] == "-ra") || (args[1] == "-rv")) {
