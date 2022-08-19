@@ -167,12 +167,35 @@ func main() {
 				}
 
 				text, err := methods.ReadTextHeader(args[2])
+
+				if err != nil {
+					panic(err)
+				}
+
 				err = methods.ExtractText(text, args[2], outputFilePath)
 				if err != nil {
 					panic(err)
 				}
 
 				fmt.Println("Файл успешно извлечён.")
+			}
+		}
+		if (len(args) == 4) && (args[1] == "-rt") {
+			if _, err := os.Stat(args[2]); err == nil {
+				txtFileName := args[3]
+
+				text, err := methods.ReadTextHeader(args[2])
+
+				if err != nil {
+					panic(err)
+				}
+
+				err = methods.ReplaceText(text, args[2], txtFileName)
+				if err != nil {
+					panic(err)
+				}
+
+				fmt.Println("Файл успешно модифицирован.")
 			}
 		}
 		if ((len(args) == 3) || (len(args) == 4)) && ((args[1] == "-ra") || (args[1] == "-rv")) {

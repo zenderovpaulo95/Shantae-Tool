@@ -76,6 +76,18 @@ type VolHeader struct {
 	FileSize   uint //Полный размер файла
 }
 
+func RemoveDuplicate[T string | int](sliceList []T) []T {
+	allKeys := make(map[T]bool)
+	list := []T{}
+	for _, item := range sliceList {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
+}
+
 func SortListFiles(arcHead []ListFiles) []ListFiles {
 	for i := 1; i < len(arcHead); i++ {
 		for j := i; j > 0; j-- {
