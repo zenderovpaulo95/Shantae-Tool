@@ -200,6 +200,9 @@ func ReplaceText(text TextHeader, fileName string, txtFileName string) (err erro
 			})
 
 			newStrings = RemoveDuplicate(newStrings)
+			for i := 0; i < len(newStrings); i++ {
+				fmt.Println(newStrings[i])
+			}
 			newOffsets := make([]uint, len(newStrings))
 
 			newOffsets[0] = startOffset
@@ -208,18 +211,55 @@ func ReplaceText(text TextHeader, fileName string, txtFileName string) (err erro
 				len := len([]byte(newStrings[i-1])) + 1
 				newOffsets[i] = newOffsets[i-1] + uint(len)
 			}
-		}
 
-		/*for scanner.Scan() {
-			newStr := scanner.Text()
-
-			if strings.Index(newStr, ". ") > 0 {
-
-				newStr = newStr[strings.Index(newStr, ". ")+2:]
-				fmt.Println(newStr)
+			for i := 0; i < len(newStrings); i++ {
+				for j := 0; j < int(text.CountTexts); j++ {
+					for k := 0; k < int(text.CountLocTexts); k++ {
+						if text.TextStrings[j].Texts[k] == newStrings[i] {
+							text.TextStrings[j].TextOffsets[k] = newOffsets[i]
+						}
+					}
+				}
 			}
-		}*/
 
+			file, err := os.Open(fileName)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			tmpByte := make([]byte, startOffset)
+			file.Read(tmpByte)
+			newFile, err := os.Create(fileName + ".tmp")
+
+			if err != nil {
+				return err
+			}
+			defer newFile.Close()
+
+			newFile.Write(tmpByte)
+
+			for i := 0; i < len(newStrings); i++ {
+				ch := 0
+				tmpStr := fmt.Sprintf("%s%c", newStrings[i], ch)
+				tmpByte = []byte(tmpStr)
+				newFile.Write(tmpByte)
+			}
+
+			newFile.Seek(int64(text.TableTextOff), 0)
+
+			for i := 0; i < int(text.CountTexts); i++ {
+				tmpByte = make([]byte, 4)
+				binary.LittleEndian.PutUint32(tmpByte, uint32(text.TextStrings[i].CRC))
+				newFile.Write(tmpByte)
+
+				for j := 0; j < int(text.CountLocTexts); j++ {
+					tmpByte = make([]byte, 4)
+					binary.LittleEndian.PutUint32(tmpByte, uint32(text.TextStrings[i].TextOffsets[j]))
+					newFile.Write(tmpByte)
+				}
+			}
+		}
 	} else {
 		err = fmt.Errorf("В файле нет строк")
 		return err
