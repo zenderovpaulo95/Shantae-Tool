@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"shantae/methods"
 )
@@ -53,7 +54,64 @@ func main() {
 				}
 			}
 		}
+		if ((len(args) == 4) || (len(args) == 5)) && (args[1] == "-compare") {
+			orIndex := 1 //По умолчанию будет значение 1 (сравнение с первой строкой)
 
+			_, err := os.Stat(args[2])
+			if err != nil {
+				panic(err)
+			}
+
+			_, err = os.Stat(args[3])
+			if err != nil {
+				panic(err)
+			}
+
+			if len(args) == 5 {
+				orIndex, err = strconv.Atoi(args[4])
+				if err != nil {
+					orIndex = 1
+				}
+			}
+
+			err = methods.CompareFiles(args[2], args[3], orIndex)
+
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Println("Найдены непереведённые строки.")
+		}
+		if ((len(args) == 4) || (len(args) == 5)) && (args[1] == "-replace") {
+			orIndex := 1 //По умолчанию будет значение 1 (замена певой строки)
+
+			_, err := os.Stat(args[2])
+
+			if os.IsNotExist(err) {
+				panic(err)
+			}
+
+			_, err = os.Stat(args[3])
+
+			if err != nil {
+				panic(err)
+			}
+
+			if len(args) == 5 {
+				orIndex, err = strconv.Atoi(args[4])
+				if err != nil {
+					orIndex = 1
+				}
+			}
+
+			err = methods.ReplaceFromLocalizedFile(args[2], args[3], orIndex)
+
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Println("В оригинальный файл успешно перенесены переведённые строки")
+		}
 		if ((len(args) == 3) || (len(args) == 4)) && ((args[1] == "-ea") || (args[1] == "-ev")) {
 			if _, err := os.Stat(args[2]); err == nil {
 				outputFilePath := filepath.Dir(args[0]) + "/Unpacked"
@@ -257,7 +315,19 @@ func main() {
 		fmt.Printf("%s -ra arc.data - перепаковать vol файлы в архив. По умолчанию папка Unpacked, находящаяся рядом с программой.\n", args[0])
 		fmt.Printf("%s -ra arc.data \"путь/к/папке/с извлечёнными ресурсами\" - перепаковать vol файлы в архив из указанной папки с ресурсами.\n", args[0])
 		fmt.Printf("%s -la arc.data - получить список файлов в архиве.\n", args[0])
-		fmt.Printf("%s -lv arc.vol - получить список файлов в vol файле.\n", args[0])
+		fmt.Printf("%s -lv file.vol - получить список файлов в vol файле.\n", args[0])
+		fmt.Printf("%s -ev file.vol - распаковать vol файл.\n", args[0])
+		fmt.Printf("%s -ev file.vol \"путь/к/папке/с извлечёнными ресурсами\" - распаковать vol файл в указанную папку.\n", args[0])
+		fmt.Printf("%s -rv file.vol - перепаковать vol файл.\n", args[0])
+		fmt.Printf("%s -rv file.vol \"путь/к/папке/с извлечёнными ресурсами\" - перепаковать vol файл из указанной папки\n", args[0])
+		fmt.Printf("%s -et file.vol - распаковать text файл.\n", args[0])
+		fmt.Printf("%s -et file.vol \"путь/к/папке/с извлечёнными ресурсами\" - распаковать text файл в указанную папку.\n", args[0])
+		fmt.Printf("%s -rt file.vol loc_file.txt - перепаковать text файл.\n", args[0])
+		fmt.Printf("%s -replace or_file.txt loc_file - Заменить оригинальные строки на локализованные.\n", args[0])
+		fmt.Printf("%s -replace or_file.txt loc_file or_index - Заменить оригинальные строки на локализованные с указанием номера строки.\n", args[0])
+		fmt.Printf("%s -compare original.txt replaced_original.txt - найти непереведённые строки в локализованном файле.\n", args[0])
+		fmt.Printf("%s -compare original.txt replaced_original.txt or_index - найти непереведённые строки в локализованном файле с указанием номера строки.\n", args[0])
+
 	}
 
 }

@@ -126,6 +126,193 @@ func ReadTextHeader(fileName string) (Text TextHeader, err error) {
 	return
 }
 
+//CompareFiles - сравнение оригинального файла с оригинальным файлом, в котором заменили строки
+func CompareFiles(firstFile, secondFile string, selIndex int) (err error) {
+	first, err := os.Open(firstFile)
+	if err != nil {
+		return err
+	}
+	defer first.Close()
+
+	second, err := os.Open(secondFile)
+	if err != nil {
+		return err
+	}
+	defer second.Close()
+
+	firstScan := bufio.NewScanner(first)
+	secondScan := bufio.NewScanner(second)
+
+	var fCountTxts, fCountLocTxts int
+	var sCountTxts, sCountLocTxts int
+
+	firstScan.Scan()
+	secondScan.Scan()
+
+	tmpStrs := strings.Split(firstScan.Text(), " ")
+	fCountTxts, _ = strconv.Atoi(tmpStrs[0])
+	fCountLocTxts, _ = strconv.Atoi(tmpStrs[1])
+
+	tmpStrs = strings.Split(firstScan.Text(), " ")
+	sCountTxts, _ = strconv.Atoi(tmpStrs[0])
+	sCountLocTxts, _ = strconv.Atoi(tmpStrs[1])
+
+	if fCountTxts != sCountTxts {
+		err = fmt.Errorf("Количество строк из первого файла не совпадает с количеством строк из второго файла")
+		return err
+	}
+
+	if fCountLocTxts != sCountLocTxts {
+		err = fmt.Errorf("Количество локализованных строк из первого файла не совпадает с количеством локализованных строк из второго файла")
+		return err
+	}
+
+	var fStrs [][]string
+	var sStrs [][]string
+	var row   []string
+
+	for i := 0; i < fCountTxts; i++ {
+		for j := 0; j < fCountLocTxts; j++ {
+			firstScan.Scan()
+			row = append(row, firstScan.Text())
+		}
+		fStrs = append(fStrs, row)
+		row = nil
+		firstScan.Scan()
+	}
+
+	for i := 0; i < sCountTxts; i++ {
+		for j := 0; j < sCountLocTxts; j++ {
+			secondScan.Scan()
+			row = append(row, secondScan.Text())
+		}
+		sStrs = append(sStrs, row)
+		row = nil
+		secondScan.Scan()
+	}
+
+	var nonTranslatedStrs []string
+
+	for i := 0; i < fCountTxts; i++ {
+		if fStrs[i][selIndex - 1] == sStrs[i][selIndex - 1] {
+			nonTranslatedStrs = append(nonTranslatedStrs, fStrs[i][selIndex - 1])
+		}
+	}
+
+	if len(nonTranslatedStrs) > 0 {
+		newFilePath := firstFile[:strings.LastIndex(firstFile, ".txt")] + "_non-translated.txt"
+		newFile, err := os.Create(newFilePath)
+
+		if err != nil {
+			return err
+		}
+		defer newFile.Close()
+
+		for i := 0; i < len(nonTranslatedStrs); i++ {
+			newFile.WriteString(nonTranslatedStrs[i])
+			newFile.WriteString("\r\n")
+		}
+	} else {
+		err = fmt.Errorf("На найдено непереведённых строк")
+		return err
+	}
+
+	return
+}
+
+func ReplaceFromLocalizedFile(originalFile string, translatedFile string, orIndex int) (err error) {
+	original, err := os.Open(originalFile)
+	if err != nil {
+		return err
+	}
+	defer original.Close()
+
+	translate, err := os.Open(translatedFile)
+	if err != nil {
+		return err
+	}
+	defer translate.Close()
+
+	var orCountTexts, orCountLocTexts int
+	var trCountTexts, trCountLocTexts int
+
+	orScanner := bufio.NewScanner(original)
+	trScanner := bufio.NewScanner(translate)
+
+	orScanner.Scan()
+	orFirstString := orScanner.Text()
+	tmpStrs := strings.Split(orFirstString, " ")
+	orCountTexts, _ = strconv.Atoi(tmpStrs[0])
+	orCountLocTexts, _ = strconv.Atoi(tmpStrs[1])
+
+	trScanner.Scan()
+	tmpStrs = strings.Split(trScanner.Text(), " ")
+	trCountTexts, _ = strconv.Atoi(tmpStrs[0])
+	trCountLocTexts, _ = strconv.Atoi(tmpStrs[1])
+
+	if orCountLocTexts < orIndex + 1 || trCountLocTexts < orIndex + 1 {
+		err = fmt.Errorf("Недостаточно локализованных строк для сравнения")
+		return err
+	}
+
+	var orStrings [][]string
+	var trStrings [][]string
+	var row []string
+
+	for i := 0; i < orCountTexts; i++ {
+		for j := 0; j < orCountLocTexts; j++ {
+			orScanner.Scan()
+			row = append(row, orScanner.Text())
+		}
+		orScanner.Scan()
+		orStrings = append(orStrings, row)
+		row = nil
+	}
+
+	for i := 0; i < trCountTexts; i++ {
+		for j := 0; j < trCountLocTexts; j++ {
+			trScanner.Scan()
+			row = append(row, trScanner.Text())
+		}
+		trScanner.Scan()
+		trStrings = append(trStrings, row)
+		row = nil
+	}
+
+	//Английская версия обычно идёт первой. Значит, будем пробовать
+	//искать значения у соседней строки и надеяться, что всё заменится без проблем
+
+	for i := 0; i < orCountTexts; i++ {
+		for j := 0; j < trCountTexts; j++ {
+			if orStrings[i][orIndex] == trStrings[j][orIndex] {
+				orStrings[i][orIndex - 1] = trStrings[j][orIndex - 1]
+			}
+		}
+	}
+
+	newFileName := originalFile[:strings.LastIndex(originalFile, ".txt")] + "_translated.txt"
+	fmt.Println(newFileName)
+	newFile, err := os.Create(newFileName)
+
+	if err != nil {
+		return err
+	}
+	defer newFile.Close()
+
+	newFile.WriteString(orFirstString)
+	newFile.WriteString("\r\n")
+
+	for i := 0; i < orCountTexts; i++ {
+		for j := 0; j < orCountLocTexts; j++ {
+			newFile.WriteString(orStrings[i][j])
+			newFile.WriteString("\r\n")
+		}
+		newFile.WriteString("\r\n")
+	}
+
+	return
+}
+
 func ExtractText(text TextHeader, fileName string, outputDir string) (err error) {
 	if (text.CountTexts > 0) && (text.CountLocTexts > 0) {
 		fi, _ := os.Stat(fileName)
