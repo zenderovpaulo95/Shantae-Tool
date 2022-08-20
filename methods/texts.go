@@ -185,7 +185,7 @@ func ReplaceText(text TextHeader, fileName string, txtFileName string) (err erro
 						//fmt.Printf("Было: %s\n", text.TextStrings[i].Texts[j])
 						text.TextStrings[i].Texts[j] = scanner.Text()
 						if strings.Contains(text.TextStrings[i].Texts[j], "\\n") {
-							text.TextStrings[i].Texts[j] = strings.Replace(text.TextStrings[i].Texts[j], "\\n", "\n")
+							text.TextStrings[i].Texts[j] = strings.Replace(text.TextStrings[i].Texts[j], "\\n", "\n", -1)
 						}
 						newStrings = append(newStrings, text.TextStrings[i].Texts[j])
 						//fmt.Printf("Стало: %s\n", text.TextStrings[i].Texts[j])
