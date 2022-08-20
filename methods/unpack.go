@@ -27,6 +27,10 @@ func UnpackAnotherVol(listFiles []AnotherListFiles, fileName string, outputDir s
 		tmpByte := make([]byte, listFiles[i].Size)
 		_, err = file.Read(tmpByte)
 
+		if err != nil {
+			return err
+		}
+
 		_, err = os.Stat(outputDir + "/" + listFiles[i].FileName)
 
 		if !os.IsNotExist(err) {
@@ -75,6 +79,10 @@ func UnpackVol(listFiles []ListVolFiles, fileName string, outputDir string) (err
 
 		tmpByte := make([]byte, listFiles[i].Size)
 		_, err = file.Read(tmpByte)
+
+		if err != nil {
+			return err
+		}
 
 		_, err = os.Stat(outputDir + "/" + listFiles[i].FileName)
 
