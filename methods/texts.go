@@ -143,6 +143,9 @@ func ExtractText(text TextHeader, fileName string, outputDir string) (err error)
 
 		for i := 0; i < int(text.CountTexts); i++ {
 			for j := 0; j < int(text.CountLocTexts); j++ {
+				if strings.Contains(text.TextStrings[i].Texts[j], "\n") {
+					text.TextStrings[i].Texts[j] = strings.Replace(text.TextStrings[i].Texts[j], "\n", "\\n", -1)
+				}
 				file.WriteString(text.TextStrings[i].Texts[j])
 				file.WriteString("\r\n")
 			}
@@ -181,6 +184,9 @@ func ReplaceText(text TextHeader, fileName string, txtFileName string) (err erro
 						scanner.Scan()
 						//fmt.Printf("Было: %s\n", text.TextStrings[i].Texts[j])
 						text.TextStrings[i].Texts[j] = scanner.Text()
+						if strings.Contains(text.TextStrings[i].Texts[j], "\\n") {
+							text.TextStrings[i].Texts[j] = strings.Replace(text.TextStrings[i].Texts[j], "\\n", "\n")
+						}
 						newStrings = append(newStrings, text.TextStrings[i].Texts[j])
 						//fmt.Printf("Стало: %s\n", text.TextStrings[i].Texts[j])
 					}
